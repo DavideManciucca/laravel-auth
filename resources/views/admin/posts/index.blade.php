@@ -20,7 +20,14 @@
           <th scope="row">{{$post->id}}</th>
           <td>{{$post->title}}</td>
           {{-- <td>{{$post->content}}</td> --}}
-          <td>EDIT SHOW</td>
+          <td><a class="btn btn-primary" href="{{route('admin.posts.show', $post)}}">SHOW</a>
+            <a class="btn btn-warning" href="{{route('admin.posts.edit', $post)}}">EDIT</a>
+            <form onsubmit="return confirm('vuoi eliminare il campo?')" class="d-inline" action="{{route('admin.posts.destroy', $post)}}" method="POST">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-danger" >DELETE</a>
+                </form>
+
+        </td>
 
         </tr>
         @endforeach
@@ -28,5 +35,6 @@
 
     </tbody>
   </table>
+  {{$posts->links()}}
 </div>
 @endsection

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Post;
 
+
 class PostController extends Controller
 {
     /**
@@ -15,7 +16,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::orderby('id','desc')->get();
+        $posts = Post::orderby('id','desc')->paginate(10);
         return view('admin.posts.index',compact('posts'));
     }
 
@@ -26,7 +27,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.posts.create');
     }
 
     /**
@@ -37,7 +38,22 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+         $request->validate([
+             "title"=>"required|min:3|max:255"
+         ],
+         [
+             "title.required"=>"E' necessario inserire un titolo per poter proseguire",
+             "title.min"=>"Il titolo deve essere lungo almeno :min caratteri per poter proseguire",
+             "title:max"=>"Il titolo deve essere lungo massimo :max caratteri per poter proseguire",
+         ]
+         );
+        $data = $request->all();
+        $new_post = new Post();
+        $data['slug'] = Post::genSlug($data['title']);
+        $new_post->fill($data);
+        $new_post->save();
+        return redirect()->route('admin.posts.show', $new_post);
+
     }
 
     /**
@@ -48,7 +64,8 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        //
+        $post = Post::find($id);
+        return view('admin.posts.show', compact('post'));
     }
 
     /**
@@ -59,7 +76,8 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $post = Post::find($id);
+        return view('admin.posts.edit', compact('post'));
     }
 
     /**
@@ -69,9 +87,12 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        $data = $request->all();
+        $data['slug']=Post::genSlug($data['title']);
+        $post->update($data);
+        return redirect()->route('admin.posts.show', $post);
     }
 
     /**
@@ -80,8 +101,10 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $post->delete();
+        return redirect()->route('admin.posts.index');
     }
+
 }
